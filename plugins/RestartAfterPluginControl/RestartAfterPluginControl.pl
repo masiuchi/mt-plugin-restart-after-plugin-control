@@ -12,8 +12,8 @@ my $plugin = __PACKAGE__->new({
     key      => lc $NAME,
     version  => $VERSION,
     author_name => 'masiuchi',
-    author_link => 'https://github.com/masiuchi/',
-    plugin_link => 'https://github.com/masiuchi/mt-plugin-restart-after-plugin-control/',
+    author_link => 'https://github.com/masiuchi',
+    plugin_link => 'https://github.com/masiuchi/mt-plugin-restart-after-plugin-control',
     description => 'Restart FastCGI process after changing plugin status.',
 });
 MT->add_plugin( $plugin );
