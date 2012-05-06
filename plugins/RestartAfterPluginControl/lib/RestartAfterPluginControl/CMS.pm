@@ -10,7 +10,7 @@ sub plugin_control {
 
     MT::CMS::Plugin::plugin_control( $app );
 
-    if ( $ENV{FAST_CGI} ) {
+    if ( $ENV{FAST_CGI} && !$app->{_errstr} && $app->{redirect} ) {
         MT::Touch->touch( 0, 'config' );
         $app->{redirect_use_meta} = 1;
     }
