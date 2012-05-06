@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use base 'MT::Plugin';
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $NAME    = ( split /::/, __PACKAGE__ )[-1];
 
 my $plugin = __PACKAGE__->new({
