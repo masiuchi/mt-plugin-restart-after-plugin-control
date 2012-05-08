@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use base 'MT::Plugin';
 
-use MT::Touch;
+use MT::Touch::NoCache;
 use MT::Util;
 use MT::CMS::Plugin;
 
@@ -23,9 +23,9 @@ my $plugin = __PACKAGE__->new(
             'Restart FastCGI process after changing plugin status.',
         registry => {
             applications =>
-                { cms => { methods => { do_nothing => sub {}, }, }, },
+                { cms => { methods => { redirect_meta => \&_redirect_meta, }, }, },
         },
-        init_request => \&_init_req,
+        init_request => \&_init_request,
     }
 );
 MT->add_plugin($plugin);
@@ -36,32 +36,44 @@ MT->add_plugin($plugin);
     no warnings 'redefine';
     *MT::CMS::Plugin::plugin_control = sub {
         my ($app) = @_;
-
         $orig->($app);
 
         if ( $ENV{FAST_CGI} && !$app->{_errstr} && $app->{redirect} ) {
-            MT::Touch->touch( 0, 'config' );
-            $app->{redirect_use_meta} = 1;
+            MT::Touch::NoCache->touch( 0, 'config' );
+            return _redirect_meta( $app );
         }
     };
 }
 
-sub _init_req {
+sub _redirect_meta {
+    my ( $app ) = @_;
+
+    my $redirect = $app->{redirect};
+    $app->{redirect} = '';
+    return '<meta http-equiv="refresh" content="0.1;url='
+        . $redirect
+        . '">';
+}
+
+sub _init_request {
     my ($app) = @_;
 
-    if ( my $touched = MT::Touch->latest_touch( 0, 'config' ) ) {
+    my $touched = MT::Touch::NoCache->latest_touch( 0, 'config' );
+    if ( $touched ) {
         $touched = MT::Util::ts2epoch( undef, $touched, 1 );
         my $startup = $app->{fcgi_startup_time };
         if ( $startup && $touched > $startup ) {
             my $mode = $app->param( '__mode' );
-            $app->param( '__mode', 'do_nothing' );
-            $app->redirect(
-                $app->uri(
+            $app->param( '__mode', 'redirect_meta' );
+            my $redirect_uri = $ENV{HTTP_REFERER};
+            my $app_uri      = $app->uri();
+            if ( $redirect_uri !~ m/${app_uri}/ ) {
+                $redirect_uri = $app->uri(
                     mode => $mode,
                     args => $app->{parameters},
-                ),
-                UseMeta => 1,
-            );
+                );
+            }
+            $app->redirect( $redirect_uri );
         }
     }
 }
