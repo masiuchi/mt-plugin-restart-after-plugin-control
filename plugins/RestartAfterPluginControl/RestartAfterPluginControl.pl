@@ -64,9 +64,13 @@ sub _init_request {
         if ( $startup && $touched > $startup ) {
             my $mode = $app->param('__mode');
             $app->param( '__mode', 'redirect_meta' );
+
+            my %param = %{ $app->{query}{param} };
+            delete $param{__mode};
+
             my $redirect_uri = $app->uri(
                 mode => $mode,
-                args => $app->{parameters},
+                args => \%param,
             );
             $app->redirect($redirect_uri);
         }
