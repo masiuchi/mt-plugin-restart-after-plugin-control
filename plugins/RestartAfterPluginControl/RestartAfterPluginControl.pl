@@ -7,7 +7,7 @@ use MT::Touch::NoCache;
 use MT::Util;
 use MT::CMS::Plugin;
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $NAME = ( split /::/, __PACKAGE__ )[-1];
 
 my $plugin = __PACKAGE__->new(
